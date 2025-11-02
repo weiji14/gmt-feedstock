@@ -14,7 +14,7 @@ export CFLAGS="$CFLAGS -fPIC -I$PREFIX/include"
 
 mkdir build && cd build
 
-cmake -D CMAKE_INSTALL_PREFIX=$PREFIX \
+cmake ${CMAKE_ARGS} -D CMAKE_INSTALL_PREFIX=$PREFIX \
       -D CMAKE_BUILD_TYPE=Release \
       -D FFTW3_ROOT=$PREFIX \
       -D GDAL_ROOT=$PREFIX \
@@ -22,7 +22,9 @@ cmake -D CMAKE_INSTALL_PREFIX=$PREFIX \
       -D PCRE_ROOT=$PREFIX \
       -D ZLIB_ROOT=$PREFIX \
       -D CURL_ROOT=$PREFIX \
-      -D LAPACK_LIBRARIES=$PREFIX/lib/liblapack${SHLIB_EXT} \
+      -D BLA_VENDOR=Generic \
+      -D GMT_ENABLE_OPENMP=TRUE \
+      -D GMT_USE_THREADS=TRUE \
       -D GMT_LIBDIR=lib \
       -D DCW_ROOT=$DCW_DIR \
       -D GSHHG_ROOT=$GSHHG_DIR \
@@ -33,7 +35,9 @@ cmake -D CMAKE_INSTALL_PREFIX=$PREFIX \
       ..
 
 make -j$CPU_COUNT
+if [[ "${CONDA_BUILD_CROSS_COMPILATION:-}" != "1" || "${CROSSCOMPILING_EMULATOR}" != "" ]]; then
 make check
+fi
 make install
 
 # We are fixing the paths to dynamic library files inside library and binary

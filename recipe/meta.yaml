@@ -1,25 +1,26 @@
 package:
   name: gmt
-  version: 6.4.0.dev0+2eecd33
+  version: 6.7.0.dev0+7026382
 source:
   git_url: https://github.com/GenericMappingTools/gmt.git
-  git_rev: 2eecd33dd9ed9d36362a87ce5f8ac5fad6d84434
+  git_rev: 7026382558e11f89e2238bb345e1d0af325c12aa
 build:
-  number: 0
-  skip: True  # [win and vc<14]
+  number: 2
 requirements:
   build:
     - cmake
     - {{ compiler('c') }}
+    - {{ stdlib('c') }}
     - make  # [not win]
   host:
     - libblas
     - libcblas
     - liblapack
     - fftw
-    - gdal
     - geos
+    - glib
     - ghostscript
+    - libgdal-core
     - libnetcdf
     - hdf5
     - zlib
@@ -28,28 +29,34 @@ requirements:
     - gshhg-gmt
     - dcw-gmt
   run:
-    - libblas
-    - libcblas
-    - liblapack
-    - fftw
-    - gdal
+    - {{ pin_compatible('fftw', max_pin='x') }}
     - geos
     - ghostscript
+    - {{ pin_compatible('libgdal-core', max_pin='x.x') }}
+    - libgdal-jp2openjpeg
     - libnetcdf
     - hdf5
-    - zlib
-    - curl
+    - {{ pin_compatible('zlib', max_pin='x.x') }}
+    - {{ pin_compatible('curl', max_pin='x') }}
     - pcre
     - gshhg-gmt  # [not win]
     - dcw-gmt  # [not win]
 test:
   commands:
+    # Test plotting basemap with coastlines
     - gmt defaults -Vd
     - gmt psbasemap -R10/70/-3/8 -JX4i/3i -Ba -B+glightred+t"TEST" -P -Vd > test0.ps
     - gmt pscoast -R0/10/0/10 -JM6i -Ba -Ggray -ENG+p1p,blue -P -Vd > test1.ps
     - gmt begin -Vd
     - gmt coast -R0/10/0/10 -JM6i -Ba -Ggray -ENG+p1p,blue -Vd
     - gmt end
+    # Test OpenMP multi-core with -x2
+    - gmt-config --all  # [not win]
+    - gmt  # [win]
+    - gmt grdmath -Rg -I1 0 90 SDIST = dist_to_NP.nc -x2
+    # Test reading/writing a JP2 file (S90E000.earth_relief_05m_p.jp2)
+    - gmt grdcut @earth_relief_05m -R-10/-9/3/5 -Greliefcut.jp2=gd:JP2OpenJPEG
+    - "[ -e 'reliefcut.jp2' ] && exit 0 || exit 1"
 about:
   home: https://www.generic-mapping-tools.org
   license: LGPL-3.0-or-later
