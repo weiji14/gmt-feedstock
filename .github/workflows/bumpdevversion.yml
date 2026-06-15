@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           token: ${{ steps.generate-token.outputs.token }}
-          repository: conda-forge/gmt-feedstock
+          repository: GenericMappingTools/gmt-feedstock
           ref: devel
           persist-credentials: true
 
@@ -121,7 +121,7 @@ jobs:
             --title "$TITLE" \
             --base devel \
             --draft \
-            --head GenericMappingTools:devel \
+            --repo conda-forge/gmt-feedstock \
             --body "$(cat <<'EOF'
             **This is an automated pull request!**
 
