@@ -6,6 +6,8 @@ on:
   schedule:
     - cron: "0 9 * * 2"
 
+permissions: {}
+
 jobs:
   bump-dev-version:
     name: Bump GMT development version
@@ -103,19 +105,24 @@ jobs:
 
       # Open a Pull Request from organization (GenericMappingTools) fork to the upstream (conda-forge) repo
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          title: "Bump GMT from ${{ steps.version_info.outputs.OLD_VERSION_STRING }} to ${{ steps.version_info.outputs.NEW_VERSION_STRING }}"
-          commit-message: "Bump GMT dev version from ${{ steps.version_info.outputs.OLD_VERSION_STRING }} to ${{ steps.version_info.outputs.NEW_VERSION_STRING }}"
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          # reviewers: ""  # TODO change to maintainer on conda-forge/gmt-feedstock
-          base: devel
-          branch: update/${{ steps.version_info.outputs.NEW_VERSION_STRING }}
-          delete-branch: true
-          draft: true
-          push-to-fork: GenericMappingTools/gmt-feedstock
-          token: ${{ steps.generate-token.outputs.token }}
-          body: |
+        run: |
+          BRANCH="update/${{ steps.version_info.outputs.NEW_VERSION_STRING }}"
+          TITLE="Bump GMT dev version from ${{ steps.version_info.outputs.OLD_VERSION_STRING }} to ${{ steps.version_info.outputs.NEW_VERSION_STRING }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add recipe/meta.yaml
+          git commit -m "$TITLE"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "$TITLE" \
+            --base devel \
+            --draft \
+            --head GenericMappingTools:devel \
+            --body "$(cat <<'EOF'
             **This is an automated pull request!**
 
             This PR will update the following package:
@@ -132,3 +139,5 @@ jobs:
             [2]: https://github.com/GenericMappingTools/gmt/commit/${{ steps.version_info.outputs.OLD_SHA_HASH }}
             [3]: https://github.com/GenericMappingTools/gmt/commit/${{ steps.version_info.outputs.NEW_SHA_HASH }}
             [4]: https://github.com/GenericMappingTools/gmt/compare/${{ steps.version_info.outputs.OLD_SHA_HASH }}...${{ steps.version_info.outputs.NEW_SHA_HASH }}
+            EOF
+            )"
