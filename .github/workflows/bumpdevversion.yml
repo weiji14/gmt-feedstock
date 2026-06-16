@@ -142,4 +142,4 @@ jobs:
           EOF
           )"
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
