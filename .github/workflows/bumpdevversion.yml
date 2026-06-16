@@ -141,3 +141,5 @@ jobs:
           [4]: https://github.com/GenericMappingTools/gmt/compare/${{ steps.version_info.outputs.OLD_SHA_HASH }}...${{ steps.version_info.outputs.NEW_SHA_HASH }}
           EOF
           )"
+        env:
+          GH_TOKEN: ${{ github.token }}
