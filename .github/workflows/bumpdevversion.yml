@@ -140,6 +140,7 @@ jobs:
           [3]: https://github.com/GenericMappingTools/gmt/commit/${{ steps.version_info.outputs.NEW_SHA_HASH }}
           [4]: https://github.com/GenericMappingTools/gmt/compare/${{ steps.version_info.outputs.OLD_SHA_HASH }}...${{ steps.version_info.outputs.NEW_SHA_HASH }}
           EOF
-          )"
+          )" \
+            --no-maintainer-edit
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
